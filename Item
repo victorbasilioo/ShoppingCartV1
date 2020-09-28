@@ -1,0 +1,56 @@
+public class Item {
+	 
+     //Calculating the taxes for product
+    public static double calcTax(id p, String location){
+      	double UnitPrice = getSTDPricebook(p);
+        double MetadataLocationTax = CustomMetadataLocationTax(location);
+        
+        If(UnitPrice == null){
+            
+            return null;
+        }else if (MetadataLocationTax <> Null){ 
+            double calc = ((MetadataLocationTax/100) * UnitPrice)+UnitPrice;
+            system.debug('Tax applied: ' + MetadataLocationTax);
+            return calc;
+        }else{
+           	double calc = UnitPrice;
+            System.debug('No taxes applied');
+            return calc;  
+        }
+    }
+
+   
+    
+    //Search existing metadata to get the correct tax % depending on the location;
+    @TestVisible
+    private static double CustomMetadataLocationTax(String location){
+        list<CalcTax__mdt> taxLocation = Database.query('Select id, MasterLabel, Tax__c from CalcTax__mdt where MasterLabel =: location limit 1');
+        if(taxLocation.size()>0){
+        System.debug('Location found: ' + location + '/ Tax: '+ taxLocation[0].Tax__c);
+        return taxLocation[0].Tax__c;
+        }else{
+            return null;
+        }
+    }
+    
+    //Get Unit price of the product for the standard pricebook;
+    //Return UnitPrice if PB entry exists, if not, return Null;
+    public static double getSTDPriceBook(id p){
+		list<Pricebook2> StdPB = [Select id, Name from Pricebook2 where IsStandard = true limit 1];
+        System.debug('Price book found: ' + StdPB[0].Name);
+     	list<PricebookEntry> pbEntryList = [Select UnitPrice from PricebookEntry where product2Id =: p AND Pricebook2Id =: StdPB AND IsActive = true limit 1];     
+
+        if(pbEntryList.size()>0 && StdPB.size()>0){
+            System.debug('Unit price found: ' + pbEntryList[0].UnitPrice );
+            return pbEntryList[0].UnitPrice;
+            
+            
+        }else{
+            System.debug('Standard price entry does not exist for product ' + p);
+            return null;
+            
+        }
+    }
+    
+    
+}
