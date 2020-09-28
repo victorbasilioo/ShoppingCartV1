@@ -1,0 +1,117 @@
+@isTest
+public class TestItem {
+
+    @testSetup
+    static void TestSetup() {
+ 		
+        //create new product with std pricebook
+        Product2 p = new product2();
+        p.Name = 'Test';
+        insert p;
+        
+        //create new product
+        Product2 p2 = new product2();
+        p2.Name = 'Test 2';
+        insert p2;
+        
+        //create std pricebook and updating it to make sure it will be active for the test class
+        Pricebook2 standardPricebook = new Pricebook2(
+	    	Id = Test.getStandardPricebookId(),
+	    	IsActive = true
+	    	);
+        
+        update standardPricebook;
+
+
+        
+        // Create Standard PriceBookEntry
+        PriceBookEntry stdPriceBookEntry = new PriceBookEntry();
+        stdPriceBookEntry.Product2Id=p.Id;
+        stdPriceBookEntry.Pricebook2Id=standardPricebook.Id;
+        stdPriceBookEntry.UnitPrice=2000;
+        stdPriceBookEntry.IsActive=true;
+        insert stdPriceBookEntry;
+        
+	        
+		        
+        
+	}
+    
+	@isTest
+    static void CalcTaxTest1(){
+        
+        String location = 'BC';
+        
+        
+        Product2 p = [SELECT Id,Name FROM product2 WHERE Name = 'Test' LIMIT 1];
+        Double amount = Item.CalcTax(p.Id,location);
+        System.assertEquals(2300, amount);
+       
+    }
+    
+    	@isTest
+    static void CalcTaxTest2(){
+        
+        String location = '';
+        
+        
+        Product2 p = [SELECT Id,Name FROM product2 WHERE Name = 'Test' LIMIT 1];
+        Double amount = Item.CalcTax(p.Id,location);
+        System.assertEquals(2000, amount);
+       
+    }
+    
+       	@isTest
+   		static void CalcTaxTest3(){
+        
+        String location = '';
+        
+        
+        Product2 p = [SELECT Id,Name FROM product2 WHERE Name = 'Test 2' LIMIT 1];
+        Double amount = Item.CalcTax(p.Id,location);
+        System.assertEquals(Null, amount);
+       
+    }
+    
+    
+    @isTest
+    static void getSTDPriceBookTest1(){
+        
+        Product2 p = [SELECT Id,Name FROM product2 WHERE Name = 'Test' LIMIT 1];
+        Double amount = Item.getSTDPriceBook(p.Id);
+        System.assertEquals(2000, amount);
+       
+    }
+    
+        @isTest
+    static void getSTDPriceBookTest2(){
+        
+        Product2 p = [SELECT Id,Name FROM product2 WHERE Name = 'Test 2' LIMIT 1];
+        Double amount = Item.getSTDPriceBook(p.Id);
+        System.assertEquals(null, amount);
+       
+    }
+    
+     @isTest
+    static void CustomMetadataLocationTaxTest1(){
+        
+        
+		String Label = 'BC';
+        
+        Double amount = Item.CustomMetadataLocationTax(Label);
+        System.assertEquals(15, amount);
+        
+        
+    }
+    
+         @isTest
+    static void CustomMetadataLocationTaxTest2(){
+
+		String Label = '';        
+        Double amount = Item.CustomMetadataLocationTax(Label);
+        System.assertEquals(null, amount);
+        
+    }
+    
+    
+}
