@@ -1,0 +1,57 @@
+public class Client {
+
+    public static void CreateNewClient(String fn, String ln, String email){
+        if(client.emailCheck(email)){				 //If this is true
+            if(client.ClientDuplicateCheck(email)){  //If this is true
+                client.NewClientInsert(fn, ln, email);
+            }else{
+                System.debug('Contact already exists');
+            }
+            
+        }else{
+            System.debug('Invalid email format');
+        }
+    }
+    
+    //Inserting the contact - client
+    @TestVisible
+    private static void NewClientInsert(String fn, String ln, String email){
+        Contact con = new Contact();
+        con.FirstName = fn;
+        con.LastName = ln;
+        con.Email = email;
+      
+        try{
+            insert con;
+            System.debug('New client record created: ' + con.FirstName + ' ' + con.LastName);
+        }catch(DmlException d){
+           System.debug('The following exception has occurred: ' + d.getMessage());
+
+        }
+    }
+    
+    //method to check if the contact already exists
+    @TestVisible
+    private static Boolean ClientDuplicateCheck (String e){
+        list<Contact> r = [Select email from Contact where email=:e];
+        if(r.size() == 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    //method to check if the email is in the correct format;
+    
+    @TestVisible private static Boolean emailCheck(String emailAddress){
+        if(Pattern.matches('[a-zA-Z0-9._-]+@[a-zA-Z]+.[a-zA-Z]{2,4}', emailAddress))// validation with regex
+                {
+                   return true;
+                }else{
+                    
+                    return false;
+                    
+                }
+    		}
+
+}
