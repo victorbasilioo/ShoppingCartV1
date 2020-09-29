@@ -1,0 +1,105 @@
+@isTest
+public class TestClient {
+	
+    @testSetup
+    static void TestSetup() {
+ 		
+        Contact c = new Contact();
+        c.FirstName = 'C1';
+        c.LastName = 'C1LastName';
+        c.Email = 'c1c1@c.com';
+        insert c;
+        
+        Contact c2 = new Contact();
+        c2.FirstName = 'C2';
+        c2.LastName = 'C2LastName';
+        insert c2;
+        
+    
+    }
+    
+    
+     //@isTest
+    // static void CreateNewClientTest1(){
+     
+    // Contact c = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1.com' limit 1];
+     //client.CreateNewClient(c.FirstName,c.LastName, c.email);
+
+    
+    @isTest
+    static void CreateNewClientTest1(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    client.CreateNewClient(c1.FirstName,c1.LastName,'c1c1@c.com');
+
+    }
+    
+    @isTest
+    static void CreateNewClientTest2(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    client.CreateNewClient(c1.FirstName,c1.LastName,'c1c3@c.com');
+
+    }
+    
+    @isTest
+    static void CreateNewClientTest3(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    client.CreateNewClient(c1.FirstName,c1.LastName,'c1c3c.com');
+
+    }
+    
+    
+    @isTest
+    static void NewClientInsertTest(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    client.NewClientInsert(c1.FirstName,c1.LastName,'');
+
+    }
+    
+    @isTest
+    static void NewClientInsertTest2(){
+     
+    client.NewClientInsert('','','');
+
+    }
+    
+    @isTest
+    static void emailCheckTest1(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    Boolean emailC = client.emailCheck(c1.Email);
+    System.assertEquals(true, emailC);
+
+    }
+    
+       @isTest
+       static void emailCheckTest2(){
+         
+       String c2 = 'C2LastName.com';
+       Boolean emailC = client.emailCheck(c2);
+       System.assertEquals(false, emailC);
+    
+       }
+    
+    @isTest
+    static void DuplicateCheckTest1(){
+     
+    Contact c1 = [Select Id,FirstName,LastName,email from Contact where email = 'c1c1@c.com' limit 1];
+    Boolean DupC = client.ClientDuplicateCheck(c1.Email);
+    System.assertEquals(false,DupC);
+
+    }
+    
+    @isTest
+    static void DuplicateCheckTest2(){
+     
+    String email = 'c2c2@c.com';
+    Boolean DupC = client.ClientDuplicateCheck(email);
+    System.assertEquals(true,DupC);
+
+    }
+    
+}
