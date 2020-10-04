@@ -1,0 +1,138 @@
+@isTest
+public class TestShoppingCartLineItem {
+
+    @testSetup
+    static void TestSetup() {
+ 		
+        Contact c = new Contact();
+        c.FirstName = 'C1';
+        c.LastName = 'C1LastName';
+        c.Email = 'c1c1@c.com';
+        insert c;
+        
+        //create new shopping cart 
+        Shopping_Cart__c sc = new Shopping_Cart__c();
+        sc.Contact__c = c.Id;
+        sc.Location__c = 'BC';
+        insert sc;
+        
+        //create new contact        
+        Contact c2 = new Contact();
+        c2.FirstName = 'C2';
+        c2.LastName = 'C2LastName';
+        insert c2;
+        
+        //create new product with std pricebook
+        Product2 p = new product2();
+        p.Name = 'Test #1';
+        insert p;
+        
+        //create new product
+        Product2 p2 = new product2();
+        p2.Name = 'Test #2';
+        insert p2;
+        
+        //create new product
+        Product2 p3 = new product2();
+        p3.Name = 'Test fail';
+        insert p3;
+        
+        //create std pricebook and updating it to make sure it will be active for the test class
+        Pricebook2 standardPricebook = new Pricebook2(
+		Id = Test.getStandardPricebookId(),
+		IsActive = true
+		);
+		update standardPricebook;
+        
+       	//create std pricebook and updating it to make sure it will be active for the test class
+        Cart_Line_Item__c cli = new Cart_Line_Item__c();
+        cli.Product__c = p.Id;
+        cli.Shopping_Cart__c = sc.Id;
+		insert cli;
+        
+        // Create Standard PriceBookEntry
+        PriceBookEntry stdPriceBookEntry = new PriceBookEntry();
+        stdPriceBookEntry.Product2Id=p.Id;
+        stdPriceBookEntry.Pricebook2Id=standardPricebook.Id;
+        stdPriceBookEntry.UnitPrice=2000;
+        stdPriceBookEntry.IsActive=true;
+        insert stdPriceBookEntry;
+        
+        
+    
+    }
+    
+     @isTest
+     static void AddItemsToCartTest(){
+         
+         Product2 p = [Select id from product2 where name = 'Test #1' limit 1];
+         Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c where location__c = 'BC' limit 1];
+         ShoppingCartLineItem.AddItemsToCart(p, sc);
+         
+     }
+	
+   	//NOT WORKING TO COVER THE "ELSE" SCENARIO
+     @isTest
+     static void AddItemsToCartTest2(){
+         
+        Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c where location__c = 'BC' limit 1];
+        Product2 p = [Select id,Name from product2 where name = 'Test fail' limit 1];
+        ShoppingCartLineItem.AddItemsToCart(p, sc);
+         
+     }
+        
+         
+         @isTest
+         static void AddItemsToCartTest3(){
+             
+          Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c where location__c = 'BC' limit 1];
+          list<Product2> listp = [Select id,Name from product2 where name LIKE 'Test #%'];
+          ShoppingCartLineItem.AddItemsToCart(listp, sc);
+         
+     }
+    
+
+    
+         @isTest
+         static void AddItemsToCartTest4(){
+             
+          Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c where location__c = 'BC' limit 1];
+          list<Product2> listp = [Select id,Name from product2 where name LIKE 'Test #%'];
+          list<PricebookEntry> pblist = [Select id,Name from PricebookEntry];
+          delete pblist;
+          ShoppingCartLineItem.AddItemsToCart(listp, sc);
+         
+     }
+    
+          @isTest
+          static void AddItemsToCartTest5(){
+             
+          Shopping_Cart__c sc = new Shopping_Cart__c(); 
+          list<Product2> listp = [Select id,Name from product2 where name LIKE 'Test #%'];
+          ShoppingCartLineItem.AddItemsToCart(listp, sc);
+         
+     }
+    
+         @isTest
+         static void RemoveItemsFromCartTest1(){
+          
+          Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c where location__c = 'BC' limit 1];
+          list<Cart_Line_Item__c> cli = [Select id from Cart_Line_Item__c where Shopping_Cart__c =: sc.id];
+          ShoppingCartLineItem.RemoveItemsFromCart(cli,sc.id);
+         
+     }
+    
+        @isTest
+        static void RemoveItemsFromCartTest2(){
+          
+        list<Cart_Line_Item__c> cli = [Select id from Cart_Line_Item__c where Product__c = ''];
+        Shopping_Cart__c sc = new Shopping_Cart__c();
+        ShoppingCartLineItem.RemoveItemsFromCart(cli, sc.Id);
+         
+     }
+    
+ 
+        
+
+    
+}
