@@ -31,7 +31,7 @@ public class TestShoppingCart {
         //create new product
         Product2 p2 = new product2();
         p2.Name = 'Test #2';
-        insert p2;
+        insert p2; 
          
             
         //create std pricebook and updating it to make sure it will be active for the test class
