@@ -1,0 +1,108 @@
+public class ShoppingCart {
+	
+    Shopping_Cart__c scart;
+    
+    //Do all checks and call the method to check the shopping cart
+    public static void CreateNewShoppingCart(Contact cont){
+        
+        Shopping_Cart__c scart = CheckExistingActiveCarts(cont.id);
+        
+        if(scart <> null){
+            System.debug('Found an active shopping cart: ' + scart.Name);
+            //Savepoint sp = Database.setSavepoint();
+            //EditExistingActiveCart(scart);
+        	//Database.rollback(sp);
+            
+        }else{
+            
+             InsertCart(cont.Id);
+        }
+        
+    }
+    
+    //get the existing active shopping cart and add the product hardcoded;
+    //private static void EditExistingActiveCart(Shopping_Cart__c ShopCart){
+    //    ShopCart.Description__c = 'Shopping Cart Active!';
+    //    update ShopCart;
+    //    Product2 p = [select id,Name from Product2 where id = '01t50000003kye6AAA'];
+    //    ShoppingCartLineItem.AddItemsToCart(p,ShopCart);
+    // }
+    
+    //Insert the cart
+    @TestVisible
+    private static Shopping_Cart__c InsertCart(id ContactId){
+        Shopping_Cart__c sc = new Shopping_Cart__c();
+        sc.Contact__c = ContactId;
+        sc.Status__c = 'Active';
+        
+        try{
+            
+            insert sc;
+            System.debug('Shopping cart created: ' + sc.Name);
+            return sc;
+            
+        }catch(DmlException d){
+            System.debug('Error occured: ' + d.getMessage());
+            return null;
+        }
+    }
+    
+    //check if there is any active shopping cart;
+    @TestVisible
+    private static Shopping_Cart__c CheckExistingActiveCarts(id conid){
+        
+        //Shopping_Cart__c sc = [Select id,status__c,Name,Location__c from Shopping_Cart__c where status__c = 'Active' AND Contact__c =: conid limit 1 ];
+        list<Shopping_Cart__c> sc = Database.query('Select id,status__c,Name,Location__c from Shopping_Cart__c where status__c = \'Active\' AND Contact__c =: conid limit 1');
+        
+        //Return the Ids of all active shopping carts
+        if(sc.size() > 0){
+           
+            return sc[0];
+        }else{
+            return null;
+        }
+    }
+    
+    
+    //Adding items to Shopping Cart with Taxes calculated - Interaction with Item class
+    public static void AddItemsToCart(list<Product2> prod, Shopping_Cart__c shpCart){
+        
+        	ShoppingCartLineItem.AddItemsToCart(prod, shpcart);
+        	ListCartItems(shpCart.id);
+    }
+    
+    //polimorfism from the method above - only 1 item being added *Not necessary but used to show the polimorfism concept;
+    public static void AddItemsToCart(Product2 prod, Shopping_Cart__c shpCart){
+        	
+        	ShoppingCartLineItem.AddItemsToCart(prod, shpcart);
+        	ListCartItems(shpCart.id);
+        }
+    
+	
+    //Return the list of items within a specific Shopping Cart
+    public static void ListCartItems(String sc){
+        list<Cart_Line_Item__c> cli = database.query('Select id, name, product__c from Cart_Line_Item__c where Shopping_Cart__c =:sc');
+        
+        if(cli.size()>0){
+        	for(Cart_Line_Item__c c:cli){
+            	System.debug('Line item name: '+ c.Name + ' - ' + 'Product: ' + c.Product__c + + '\n ');
+                
+            }
+        }else{
+                System.debug('There is no items in the shopping cart');
+            }
+        
+    }
+ 
+    //delete
+    @TestVisible
+    private static void RemoveItemsFromCart(list<Cart_Line_Item__c> cli, id shpc){
+                
+        ShoppingCartLineItem.RemoveItemsFromCart(cli,shpc);
+        
+        
+    }
+    
+    
+    
+}
