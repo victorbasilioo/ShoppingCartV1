@@ -1,0 +1,122 @@
+@isTest
+public class TestShoppingCart {
+    
+        @testSetup
+    	static void TestSetup() {
+ 		
+        Contact c = new Contact();
+        c.FirstName = 'C1';
+        c.LastName = 'C1LastName';
+        c.Email = 'c1c1@c.com';
+        insert c;
+            
+        Contact c2 = new Contact();
+        c2.FirstName = 'C2';
+        c2.LastName = 'C2LastName';
+        c2.Email = 'c2c2@c.com';
+        insert c2;
+            
+        //create new shopping cart 
+        Shopping_Cart__c sc = new Shopping_Cart__c();
+        sc.Contact__c = c2.Id;
+        sc.Location__c = 'BC';
+       	sc.Status__c = 'Active';
+        insert sc;
+            
+        //create new product with std pricebook
+        Product2 p = new product2();
+        p.Name = 'Test #1';
+        insert p;
+        
+        //create new product
+        Product2 p2 = new product2();
+        p2.Name = 'Test #2';
+        insert p2;
+         
+            
+        //create std pricebook and updating it to make sure it will be active for the test class
+        Pricebook2 standardPricebook = new Pricebook2(
+		Id = Test.getStandardPricebookId(),
+		IsActive = true
+		);
+		update standardPricebook;
+            
+            
+        // Create Standard PriceBookEntry
+        PriceBookEntry stdPriceBookEntry = new PriceBookEntry();
+        stdPriceBookEntry.Product2Id=p.Id;
+        stdPriceBookEntry.Pricebook2Id=standardPricebook.Id;
+        stdPriceBookEntry.UnitPrice=2000;
+        stdPriceBookEntry.IsActive=true;
+        insert stdPriceBookEntry;
+            
+        // Create Standard PriceBookEntry 2
+        PriceBookEntry stdPriceBookEntry2 = new PriceBookEntry();
+        stdPriceBookEntry2.Product2Id=p2.Id;
+        stdPriceBookEntry2.Pricebook2Id=standardPricebook.Id;
+        stdPriceBookEntry2.UnitPrice=2000;
+        stdPriceBookEntry2.IsActive=true;
+        insert stdPriceBookEntry2;
+        
+       	//create std pricebook and updating it to make sure it will be active for the test class
+        Cart_Line_Item__c cli = new Cart_Line_Item__c();
+        cli.Product__c = p.Id;
+        cli.Shopping_Cart__c = sc.Id;
+		insert cli;
+            
+ }
+    
+    	@isTest
+    	static void CreateNewShoppingCartTest(){
+        
+        Contact c = [Select id from Contact where FirstName = 'C1'];
+        ShoppingCart.CreateNewShoppingCart(c);
+        
+        }
+    
+    	@isTest
+    	static void CreateNewShoppingCartTest2(){
+        
+        Contact c = [Select id from Contact where FirstName = 'C2'];
+        ShoppingCart.CreateNewShoppingCart(c);
+        
+        }
+    
+    	@isTest
+    	static void InsertCartTest1(){
+		
+        Contact c = new Contact();
+        ShoppingCart.InsertCart(c.Id);
+        
+        }
+    
+        @isTest
+    	static void AddItemsToCartTest1(){
+        
+        list<Product2> plist = [Select id from Product2];
+        Shopping_Cart__c sc = [Select id from Shopping_Cart__c];
+        ShoppingCart.AddItemsToCart(plist,sc);
+        
+        }
+    
+        @isTest
+    	static void AddItemsToCartTest2(){
+        
+        Product2 p = [Select id from Product2 where name = 'Test #1'];
+        Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c];
+        ShoppingCart.AddItemsToCart(p,sc);
+        
+        }
+    
+        @isTest
+    	static void RemoveItemsFromCart1(){
+        
+        list<Cart_Line_Item__c> cli = [Select id from Cart_Line_Item__c where Product__c = ''];
+        Shopping_Cart__c sc = [Select id,Location__c from Shopping_Cart__c];
+        ShoppingCart.RemoveItemsFromCart(cli, sc.Id);
+        
+        }
+    
+    
+
+}
