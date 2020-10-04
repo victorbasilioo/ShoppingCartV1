@@ -1,0 +1,92 @@
+public class ShoppingCartLineItem {
+	
+    //polimorfism - from the method above - only 1 item being added
+    public static void AddItemsToCart(Product2 prod, Shopping_Cart__c shpCart){
+        
+            Cart_Line_Item__c cli = new Cart_Line_Item__c();
+            Double totalAmount = Item.calcTax(prod.id, shpCart.Location__c);
+            
+        	cli.Amount__c = totalAmount;
+        	cli.Product__c = prod.id;
+            cli.Shopping_Cart__c = shpCart.id;
+            
+        	if(cli.Amount__c <> Null){
+                 try{
+                        insert cli;
+                     	System.debug('Product added to the cart!');
+                 }catch(DmlException d){
+                     System.debug('Error occured when adding product to cart: ' + d.getMessage());
+                 }
+            }else{
+                //Not adding the product to the shopping cart because the total Amount returned is NULL.
+                System.debug('The product Unit Price is not listed in the standard pricebook for the product ' + prod.Name);
+            }
+    }
+    
+    
+    //Adding items to Shopping Cart with Taxes calculated - Interaction with Item class
+    public static void AddItemsToCart(list<Product2> prod, Shopping_Cart__c shpCart){
+        
+        list<Cart_Line_Item__c> CartLineList = new list<Cart_Line_Item__c>();
+        
+        for(Product2 p:prod){
+            Cart_Line_Item__c cli = new Cart_Line_Item__c();
+            
+            //Calling the Item class to calculate the tax for the item that is being added to the cart
+            Double totalAmount = Item.calcTax(p.Id, shpCart.id);
+            
+            cli.Amount__c = totalAmount;
+            cli.Product__c = p.id;
+            cli.Shopping_Cart__c = shpCart.id;
+            
+            if(cli.Amount__c <> null){
+            CartLineList.add(cli);
+            }else{
+                //Not adding the product to the shopping cart because the total Amount returned is NULL.
+                System.debug('The product Unit Price is not listed in the standard pricebook for the product ' + p.Name);
+            }
+            
+            
+        }
+        
+        //treating errors using the database class methods
+        Database.SaveResult[] srList = database.insert(CartLineList,false);
+        
+        for(Database.SaveResult sr:srList){
+            if(sr.isSuccess()){
+                System.debug('Successfully created the shopping cart item: ' + sr.getId());
+            }else{
+       			 // Operation failed, so get all errors                
+     		   for(Database.Error err : sr.getErrors()) {
+           			 System.debug('The following error has occurred when trying to add item to the cart: ');                    
+           			 System.debug(err.getStatusCode() + ': ' + err.getMessage());
+           			 System.debug('Fields that affected this error: ' + err.getFields());
+       				 }
+       		 }
+        }
+    }
+    
+    //REMOVING ITEMS FROM THE CART
+    public static void RemoveItemsFromCart(list<Cart_Line_Item__c> cli, id shpc){
+                
+       
+        Database.DeleteResult[] drList = database.delete(cli,false);
+        
+        for(Database.DeleteResult dr:drList){
+            if(dr.isSuccess()){
+                System.debug('Successfully deleted the shopping cart item: ' + dr.getId());
+            }else{
+       			 // Operation failed, so get all errors                
+     		   for(Database.Error err : dr.getErrors()) {
+           			 System.debug('The following error has occurred when trying to delete item from the cart: ');                    
+           			 System.debug(err.getStatusCode() + ': ' + err.getMessage());
+           			 System.debug('Fields that affected this error: ' + err.getFields());
+       				 }
+       		 }
+        }
+        
+    }
+
+    
+    
+}
